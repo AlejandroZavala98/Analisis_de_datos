@@ -1,0 +1,472 @@
+---
+title: "Análisis del Concentrado Hogar ENIGH 2018 "
+output: pdf_document
+author: "Joel Alejandro Zavala Prieto"
+toc: true
+---
+\newpage
+
+# Información de contacto
+
+Mail: alejandro.zavala1001@gmail.com
+
+Facebook: https://www.facebook.com/AlejandroZavala1001
+
+Git: https://github.com/AlejandroZavala98
+
+```{r, echo=FALSE ,warning = FALSE}
+library(knitr) #Imprimir dataframes y tablas
+library(lmtest) #Test de coeficientes de parametros, prueba para Breusch-Pagan (homocedasticidad)
+library(ggplot2)
+library(tseries) # Prueba de Jarque Bera
+```
+
+\newpage
+
+# Introducción
+
+Para este análisis que se realizo se tomo información del la ENIGH "Encuesta Nacional de Ingresos y Gastos de los Hogares" 2018, para mas detalle de cada variable que conforma este dataset se puede consultar en:
+
+https://www.inegi.org.mx/contenidos/programas/enigh/nc/2018/doc/enigh18_descriptor_archivos_fd_ns.pdf
+
+Se pretende realizar un análisis exploratorio de este dataset recabado y hacer algunas inferencias a modelos deseados
+
+# 1. ¿Qué es la ENIGH?
+			
+La Encuesta Nacional de Ingresos y Gastos del Hogar (ENIGH) se publica por el INEGI cada dos años y proporciona los ingresos y gastos de los hogares de México, con información sobre la procedencia de sus ingresos, elreparto de sus gastos y las diferencias en los gastos dependiendo de la entidad donde los hogares están establecidos, su estrato socioeconómico, el sexo del jefe de familia asi como otras características sociodemográficas.
+
+
+## Objetivo
+
+De acuerdo a la ENIGH su objetivo: 
+
+> “La ENIGH tiene como objetivo dar respuesta a los requerimientos de aquellos usuarios especializados, con un interés particular en el estudio de micro datos, permitiendo un análisis más detallado del monto, la estructura y la distribución de los ingresos de los hogares y del destino de los gastos del hogar en bienes de consumo duradero y no duradero. También se obtiene información sobre la infraestructura de las viviendas, la composición familiar de los hogares, así como de la actividad económica de cada uno de sus integrantes.”
+
+##  Población objetivo
+
+La población de principal interés, son los integrantes que sean residentes de los hogares de 12 o más años, que residen habitualmente en viviendas dentro del territorio nacional y que cuentan con un trabajo, y contemplan un salario, y por ende son la población que tiene el poder adquisitivo de llevar acabo un gasto.
+Cobertura temática.
+
+## Cobertura temática
+
+La cobertura temática de ENIGH, pretende abarcar aquellas reflexiones e investigaciones que versen sobre: hogares, gastos monetarios y no monetarios que realizo el hogar en el periodo de referencia, las erogaciones financieras, el gasto de tarjetas gastos realizados por el hogar que fueron cubiertos mediante alguna tarjeta de crédito bancario o comercial., características y ocupacionales de los integrantes del hogar, ingresos y percepciones de capital de cada uno de los integrantes del hogar, gasto por persona, la actividad de los integrantes del hogar, ingresos y gastos de los negocios del hogar dedicados tanto a las actividades agrícolas, forestales y de tala, como a actividades de cría, explotación  y productos derivaos de la pesca y caza, ingresos y gastos de los negocios del hogar dedicados a las actividades industriales, comerciales y de servicios y sus características propias.
+
+\newpage
+
+## Cobertura temporal
+
+El periodo temporal que se lleva acabo se consideran planes a mediano plazo ya que su periodo de tiempo es de un año, para este caso sería el periodo del año 2018.
+
+## Tamaño de muestra
+
+El tamaño de la muestra efectiva es de 87,826 viviendas.
+
+
+# 2. Generacion de variables
+
+En el documento "VariablesGeneradas-Analisis_concentradoHogarENIGH2018.R" se anexa el código que se utilizo para generar las variables con la base de datos "ConcentradoHogarENIGH2018.xlsx" a un archivo llamado "VariablesExtra.csv" donde únicamente se anexan las variables del ejercicio a generar. 
+
+\newpage
+
+# 3. Análisis descriptivo de las variables generadas
+
+```{r, echo=FALSE}
+enigh_df <- read.csv(file = "C:/Users/Alejandro Zavala/Zavala_Programas/Bases/VariablesExtra.csv")
+```
+
+Haciendo estadística descriptiva para la variable **vivienda**
+
+```{r, echo = FALSE, fig.height= 4, fig.width = 8.5, fig.align="center", warning=FALSE}
+
+par(mfrow=c(2,1))
+
+g <- ggplot(data = enigh_df, aes(x=vivienda))
+g <- g + geom_histogram() + labs(title="ENIGH 2018: Vivienda") + 
+  geom_histogram(bins = 30, col="black",fill = "darkgreen");g
+
+
+gb <- ggplot(data = enigh_df, aes(x=vivienda))
+gb <- gb + geom_boxplot(outlier.colour="red");gb
+
+summary(enigh_df$vivienda)
+```
+
+Notemos que para esta variable la mayor parte de los gastos por vivienda se concentran debajo del 3er quantil es decir por debajo de los 2956 pesos  
+
+\newpage
+
+Haciendo estadistica descriptiva para la variable **transporte**
+
+```{r,echo= FALSE, fig.height= 4, fig.width = 8.5, fig.align="center", warning = FALSE}
+par(mfrow=c(2,1))
+
+g <- ggplot(data = enigh_df, aes(x=transporte))
+g <- g + geom_histogram() + labs(title="ENIGH 2018: Transporte") + 
+  geom_histogram(bins = 30, col="black", fill = "darkgreen");g
+
+gb <- ggplot(data = enigh_df, aes(x=transporte))
+gb <- gb + geom_boxplot(outlier.colour="red");gb
+
+summary(enigh_df$transporte)
+```
+
+Notemos que para esta variable la mayor parte de la variable transporte se concentran debajo del 3er quantil es decir por debajo de los 7353 pesos mientras que hay datos que se alejan demasiado como el maximo que es de 628,556 
+
+\newpage
+
+Haciendo estadistica descriptiva para la variable **personales**
+
+```{r,echo = FALSE, fig.height= 4, fig.width = 8.5, fig.align="center", warning=FALSE}
+par(mfrow=c(2,1))
+
+g <- ggplot(data = enigh_df, aes(x=personales))
+g <- g + geom_histogram() + labs(title="ENIGH 2018: Personales") + 
+  geom_histogram(bins = 30, col="black",fill = "darkgreen");g
+
+
+gb <- ggplot(data = enigh_df, aes(x=personales))
+gb <- gb + geom_boxplot(outlier.colour="red");gb
+
+
+summary(enigh_df$personales)
+```
+
+Notemos que para esta variable la mayor frecuencia se encuentra debajo del 3er quantil es decir por debajo de los 2572.8 pesos mientras que hay datos que se alejan demasiado como el maximo que es de 160580.6 o nulos. 
+
+\newpage
+
+Haciendo estadistica descriptiva para la variable **gasto_mon**
+
+```{r, echo = FALSE, fig.height= 4, fig.width = 8.5, fig.align="center" , warning=FALSE}
+par(mfrow=c(2,1))
+
+g <- ggplot(data = enigh_df, aes(x=gasto_mon))
+g <- g + geom_histogram() + labs(title="ENIGH 2018: Gasto mensual") + 
+  geom_histogram(bins = 30 , col="black",fill = "darkgreen");g
+
+
+gb <- ggplot(data = enigh_df, aes(x=gasto_mon))
+gb <- gb + geom_boxplot(outlier.colour="red");gb
+
+
+summary(enigh_df$gasto_mon)
+```
+
+El promedio para el gasto mensual es de 28056, y que la mayor frecuencia de estos datos esta por debajo del 3er quantil que equivale a 34264
+
+
+\newpage
+
+Haciendo estadistica descriptiva para la variable **salud**
+
+```{r, echo = FALSE, fig.height= 4, fig.width = 8.5, fig.align="center", warning = FALSE}
+par(mfrow=c(2,1))
+
+g <- ggplot(data = enigh_df, aes(x=salud))
+g <- g + geom_histogram() + labs(title="ENIGH 2018: Salud") +
+  geom_histogram(bins = 30,col="black",fill = "darkgreen");g
+
+
+gb <- ggplot(data = enigh_df, aes(x=salud))
+gb <- gb + geom_boxplot(outlier.colour="red");gb
+
+
+summary(enigh_df$salud)
+```
+
+Podemos notar que en promedio se gasta en cosas de salud 797.8 pesos, habiendo casos donde no se gasta en salud y otros graves donde el costo de salud se incrementa por tener una enfermedad hasta en casi 455869.6 pesos
+
+\newpage
+
+# 4. Análisis de variables de "ConcentradoHogarENIGH2018.xlsx"
+
+## Listando las ultimas 20 observaciones de dos variables: "mayores" y "menores"
+
+Tomaremos la variable "mayores" y "menores" para mostrar las ultimas 20 observaciones
+
+```{r, echo = FALSE}
+trabajo_sueldos <- tail(enigh_df[,c("folioviv","mayores","menores")],20)
+kable(trabajo_sueldos,format="markdown")
+```
+
+\newpage
+
+## Listando las 10 observaciones mas altas para sueldos,ing_trab,gasto_mon, mayores y menores
+
+Listando las 10 observaciones mas altas para **sueldos**
+
+```{r, echo = FALSE}
+data_f_sueldos <- enigh_df[,c("folioviv","sueldos")]
+sueldos_asc <- data_f_sueldos[with(data_f_sueldos,order(-data_f_sueldos$sueldos)),]
+sueldos10 <- head(sueldos_asc,10)
+kable(sueldos10,format="markdown")
+```
+
+Listando las 10 observaciones mas altas para **ing_trab**
+
+```{r, echo=FALSE}
+data_f_ing_trab <- enigh_df[,c("folioviv","ing_trab")]
+ing_trab_asc <- data_f_ing_trab[with(data_f_ing_trab,order(-data_f_ing_trab$ing_trab)),]
+ing_trab10 <- head(ing_trab_asc,10)
+kable(ing_trab10,format="markdown")
+```
+
+\newpage
+
+Listando las 10 observaciones mas altas para **gasto_mon**
+```{r, echo=FALSE}
+data_f_gasto_mon <- enigh_df[,c("folioviv","gasto_mon")]
+gasto_mon_asc <- data_f_gasto_mon[with(data_f_gasto_mon,order(-data_f_gasto_mon$gasto_mon)),]
+gasto_mon10 <- head(gasto_mon_asc,10)
+kable(head(gasto_mon_asc,10),format="markdown")
+```
+
+Podemos notar que las viviendas con folio:
+
+1. 1901398801
+2. 917067802
+3. 919519302
+4. 2302287805
+
+Siendo las principales apareciendo en los sueldos, ing_trab y gasto_mon mas altos
+
+\newpage
+
+## Listando otras 10 observaciones altas de 2 variables
+
+Listando las 10 observaciones mas altas para **becas**
+
+```{r, echo=FALSE}
+data_f_becas <- enigh_df[,c("folioviv","becas")]
+becas_asc <- data_f_becas[with(data_f_becas,order(-data_f_becas$becas)),]
+becas10 <- head(becas_asc,10)
+kable(becas10,format="markdown")
+```
+
+Listando las 10 observaciones mas altas para **donativos**
+
+```{r, echo=FALSE}
+data_f_donativos <- enigh_df[,c("folioviv","donativos")]
+donativos_asc <- data_f_donativos[with(data_f_donativos,order(-data_f_donativos$donativos)),]
+donativos10 <- head(sueldos_asc,10)
+kable(donativos10,format="markdown")
+```
+
+\newpage
+
+# 5. Modelo lineal 
+
+Se propone el modelo ajustado: 
+
+\begin {equation*}
+\begin{split}
+\hat{gastomon} & = \hat{\alpha}_{0} + \hat{\alpha}_{1} trabajo_{i} + \hat{\alpha}_{2}jubilacion_{i} + \hat{\alpha}_{3}negocio_{i} + \hat{\alpha}_{4}transfhog_{i} \\
+\hat{\alpha}_{i} &> 0 \; \; \; \text{i=1,2,3,4}
+\end{split}
+\end{equation*}
+
+## Estimando el modelo con MCO
+
+```{r, echo =FALSE}
+mco_gasto_mon <- lm(gasto_mon ~ trabajo + jubilacion + negocio + transf_hog,data = enigh_df)
+coefficients(mco_gasto_mon)
+```
+
+El modelo queda finalmente:
+\begin {equation*}
+\begin{split}\hat{gastomon} = 13628.55 + 0.48846trabajo_{i} + 0.20692jubilacion_{i} + .25654negocio_{i} + 0.15808transfhog_{i}
+\end{split}
+\end{equation*}
+\newpage
+
+## Inferencia de los coeficientes
+
+```{r,echo=FALSE}
+summary(mco_gasto_mon)
+```
+La region de rechazo (tomando por ejemplo trabajo=0) de los parametros (t value) se rechaza si $|t|\geq1.96$
+Notemos que el valor 1.96 corresponde a la probabilidad de la tabla T (Student) un nivel de confianza del 95% con n-2=74645 grados de libertad. 
+
+Como todos los **t value** son mayores a 1.96 se rechaza la hipotesis nula; es decir son significantes para el modelo
+
+\newpage
+
+## Coeficiente de determinación
+
+```{r,echo=FALSE}
+summary(mco_gasto_mon)$r.squared
+```
+
+Como el cooeficiente de determinacion R es de : 0.3736 ajusta el modelo en un 37.36%
+
+## Coeficiente de determinación ajustado
+
+```{r,echo=FALSE}
+summary(mco_gasto_mon)$adj.r.squared
+```
+## Residuales y valores ajustados
+
+Se mostrarán los primeros 5 valores **residuales** 
+```{r,echo=FALSE}
+residuos <- residuals(mco_gasto_mon)
+residuos[0:5]
+```
+
+Se mostrarán los primeros 5 valores **ajustados**
+
+```{r,echo=FALSE}
+valores_ajustados <- fitted(mco_gasto_mon)
+valores_ajustados[0:5]
+```
+
+A manera de resumen se muestran las primeras 5 observaciones reales de la variable **gasto_mon**
+
+```{r,echo=FALSE}
+enigh_df$gasto_mon[0:5]
+```
+
+\newpage 
+
+# 6. Modelo logaritmico
+
+## Valores de las constantes
+
+Ahora se propone el modelo: 
+
+El modelo queda finalmente:
+\begin {equation*}
+\begin{split}
+\hat{\log{(gastomon)}} &= \hat{\beta}_{0} + \hat{\beta}_{1} \log{(trabajo)} + \hat{\beta}_{2}\log{(jubilacion)} + \hat{\beta}_{3}\log{(negocio)} + \hat{\beta}_{4}log{(transfhog)} \\
+\hat{\beta}_{j} &> 0 \; \; \; \text{j=1,2,3,4}
+\end{split}
+\end{equation*}
+
+Para poder aplicar este modelo debemos tener en cuenta que:
+
+1. El $log(x)>0$ .Es decir no existen logaritmos de valores menores o iguales a 0
+2. Se aplica un filtro que elimina valores nulos (que son renglones con valores a cero)
+3. El tamaño del filtro disminuye el del original (por suprimir valores nulos)
+
+El nuevo tamaño de datos por columna es: 443
+
+## Estimacion del modelo por MCO
+
+```{r,echo=FALSE}
+data_to_log <- enigh_df[,c("gasto_mon","trabajo","jubilacion","negocio","transf_hog")]
+row_sub <- apply(data_to_log, 1, function(row) all(row !=0 ))
+datalog <- data_to_log[row_sub,]
+mco_log <- lm(log(gasto_mon) ~ log(trabajo) + log(jubilacion) + log(negocio) 
+              + log(transf_hog),data = datalog)
+coefficients(mco_log)
+```
+
+El modelo corresponde a:
+
+$$\hat{\log{(gastomon)}}=5.74919 +  0.17177\log{(trabajo_{i})} + 0.24795\log{(jubilacion_{i})} + 0.07855\log{(negocio_{i})} - 0.0007log{(transfhog_{i})}$$
+
+\newpage
+
+## Inferencia a los coeficientes
+
+```{r,echo=TRUE}
+summary(mco_log)
+```
+
+La region de rechazo (tomando por ejemplo log(trabajo)=0) de los parametros (t value) se rechaza si $|t|\geq1.96$
+Notemos que el valor 1.96 corresponde a la probabilidad de la tabla T (Student) un nivel de confianza del 95% con n-2=441 grados de libertad. 
+
+Como la mayoria de los **t value** son mayores a 1.96 se rechaza la hipotesis nula; es decir son significantes para el modelo.
+
+El unico valor **t value ** con valor -0.033 que corresponde al estadistico t de la variable log(transf_hog) no es mayor a 1.96 no se rechaza la hipotesis nula es decir no es significativo para el modelo el cual podria ser omitido al modelo (Claro que depende de otros factores y análisis): $$\log{(gastomon)}=5.7491984041 +  0.1717730990\log{(trabajo)} + 0.247957561\log{(jubilacion)} + 0.0785542168\log{(negocio)}$$
+
+\newpage
+
+## Coeficiente de determinación
+
+```{r,echo=FALSE}
+summary(mco_log)$r.squared
+```
+
+Como el cooeficiente de determinación $R^{2}$ es de : 0.3152 ajusta el modelo en un 31.52%
+
+
+## Coeficiente de determinacion ajustado
+
+```{r,echo=FALSE}
+summary(mco_log)$r.squared
+```
+
+
+## Residuales y valores ajustados
+
+Se mostrarán los primeros 5 valores **residuales** 
+
+```{r,echo=FALSE}
+residuos_log <- residuals(mco_log)
+residuos_log[0:5]
+```
+
+Se mostrarán los primeros 5 valores **ajustados**
+
+```{r,echo=FALSE}
+valores_ajustados_log <- fitted(mco_log)
+valores_ajustados_log[0:5]
+```
+
+A manera de resumen se muestran las primeras 5 observaciones reales de la variable **gasto_mon**
+
+```{r,echo=FALSE}
+log(datalog$gasto_mon)[0:5]
+```
+
+\newpage 
+
+## Comparando modelo lineal y logaritmico
+
+Para el modelo lineal se tiene que los coeficientes son:
+```{r,echo=FALSE}
+kable(coefficients(mco_gasto_mon))
+```
+
+Para el modelo logaritmico se tiene que los coeficientes son:
+```{r,echo=FALSE}
+kable(coefficients(mco_log))
+```
+
+1. Podemos notar que los valores obtenidos difieren entre si a excepcion del valor del coeficiente en jubilacion que son algo parecidos. 
+2. Ademas de que en el modelo logaritmico podria ser omitida la variable **transf_hog**
+3. El coeficiente de determinacion mas alto es el del modelo lineal; es decir ajusta mejor los datos con una diferencia aproximada de 5.837%
+
+\newpage
+
+## Normalidad
+
+Mostrando el histgrama de los residuos del modelo lineal
+
+```{r,echo=TRUE}
+hist(residuos, freq=FALSE ,main="Distribucion de residuos del modelo lineal",
+     col="mediumpurple1")
+lines(density(residuos),col="navyblue",lwd=2)
+```
+
+Calculando su media y varianza se tiene que:
+
+```{r,echo=TRUE}
+mean(residuos)
+sd(residuos)
+```
+
+\newpage
+
+Mostrando el histgrama de los residuos del modelo logaritmico
+```{r,echo=TRUE}
+hist(residuos_log, freq=FALSE,main="Distribucion de residuos del modelo logaritmico",
+     col="mediumpurple2")
+lines(density(residuos_log),col="navyblue",lwd=2)
+```
+Calculando su media y varianza se tiene que:
+
+```{r,echo=TRUE}
+mean(residuos_log)
+sd(residuos_log)
+```
