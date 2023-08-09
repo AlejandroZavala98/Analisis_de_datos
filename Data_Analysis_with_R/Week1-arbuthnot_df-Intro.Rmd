@@ -1,0 +1,75 @@
+---
+title: "Week1-arbuthnot_df-Intro"
+author: "Alejandro Zavala"
+date: "2023-08-09"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+# Clear environment
+rm(list = ls())
+# Call libraries
+library("ggplot2")
+library("statsr")
+library("tidyverse")
+```
+
+Se hara un pequeño analisis a la tabla "arbuthnot" proveniente de la libreria **statsr**.
+Este dataframe contiene la cantidad de niños y niñas nacidos en Londres de 1629 a 1710
+
+```{r}
+data(arbuthnot) # Load dataframa
+head(arbuthnot) # Show few records
+```
+
+Describir dimensiones del dataframe
+
+```{r}
+dim(arbuthnot) # Dimension of an object in R
+dim(arbuthnot)[1] # Total records of dataframe
+dim(arbuthnot)[2] # Total fields of dataframe
+```
+
+Donde el primer elemento denota la cantidad de registros totales y el segundo denota la cantidad de campos que contiene
+
+Otra función interesante, es names que permite ver las variables del dataframe
+
+```{r}
+names(arbuthnot)
+```
+
+Veamos ahora un diagrama de dispersion de la cantidad de niñas nacidas en Londres de 1629 a 1710
+
+```{r}
+ggplot(data = arbuthnot, aes(x = year, y = girls)) +
+  geom_point() +
+  xlab("Año") +
+  ylab("Cantidad de nacidas") +
+  ggtitle("Cantidad de niñas nacidas en Londres de 1629 a 1710")
+```
+
+Construyamos un grafico donde se muestre la cantidad total de niños y niñas nacidas en Londres de 1629 a 1710
+
+```{r}
+arbuthnot$total <- arbuthnot$boys + arbuthnot$girls
+
+ggplot(data = arbuthnot, aes(x = year, y = total)) +
+  geom_line(size=1,color="darkgreen") +
+  geom_point() +
+  xlab("Año") +
+  ylab("Cantidad de nacidos en total") +
+  ggtitle("Cantidad de recién nacidos en Londres de 1629 a 1710")
+```
+
+Veamos si hay mas niños o niñas por años, creando una variable que sea verdadera cuando haya mas niños que niña en cada año
+
+```{r}
+arbuthnot$more_boys <- arbuthnot$boys > arbuthnot$girls
+head(arbuthnot,n=17)
+
+arbuthnot %>% count(more_boys)
+# Similar in SQL select more_boys from arbuthnot group by more_boys
+```
