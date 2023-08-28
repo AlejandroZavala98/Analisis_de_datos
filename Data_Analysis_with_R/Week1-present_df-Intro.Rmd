@@ -1,0 +1,107 @@
+---
+title: "Week1-present_df-Intro"
+author: "Alejandro Zavala"
+date: "2023-08-09"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+# Clear environment
+rm(list = ls())
+# Call libraries
+library("ggplot2")
+library("statsr")
+library("tidyverse")
+```
+
+Se hara un pequeño analisis a la tabla "present" proveniente de la libreria **statsr**.
+Este dataframe contiene la cantidad de niños y niñas nacidos en Estados Unidos de América de 1940 a 2013
+
+```{r}
+data(present) # Load dataframa
+head(present,n=10) # Show few records
+```
+
+Creemos dos variables, una de ellas para tener el numero total de recién nacidos y la proporción de niños respecto a la misma, asimismo hagamos un grafico que ilustre la tendencia de la serie (si es que tiene)
+
+```{r}
+# type your code for Question 5 here, and Knit
+present$total <- present$boys + present$girls # Total by year
+present$prop_boys <- present$boys/present$total # Proportion de boys borned in every year
+
+
+ggplot(data = present, aes(x = year, y = prop_boys)) +
+  geom_line(size=1,color="darkred") +
+  geom_point(color="red") +
+  xlab("Año") +
+  ylab("Cantidad de nacidos") +
+  ggtitle("Proporción de niños nacidos entre 1940 a 2013")
+```
+
+Veamos si nacen mas niños que niñas por año, **True** si se cumple y **False** caso contrario
+
+```{r}
+present$more_boys <- present$boys > present$girls
+
+ggplot(data = present, aes(x = year, y = more_boys)) +
+  geom_point(size = 2) +
+  xlab("Año") +
+  ylab("Comparación niños vs niñas") +
+  ggtitle("Comparación de niños y niñas por año")
+```
+
+Como se observa en el grafico, en todos los años la cantidad de niños nacidos fue mayor que la de niñas
+
+
+Adicional veamos con un ejemplo si hubiera otra variable
+```{r}
+# type your code for Question 6 here, and Knit
+catg <- c(TRUE,FALSE,TRUE,TRUE,TRUE,FALSE)
+year <- c(1, 2, 3, 4, 5,6)
+
+df <- data.frame(year, catg)
+
+
+ggplot(data = df, aes(x = year, y = catg)) +
+  geom_point(size=2)
+
+```
+
+Calculemos ahora la proporción de niño a niña cada año y guardemos estos valores en una variable llamada prop_boy_girl en el conjunto de datos actual. Trace estos valores a lo largo del tiempo para asi analizar su tendencia
+
+```{r}
+present$prop_boy_girl <- present$boys/present$girls
+
+ggplot(present, aes(x=year,y=prop_boy_girl)) + 
+  geom_line(size = 1,color="darkblue") + 
+  geom_point(color="darkcyan") +
+  xlab("Año") +
+  ylab("Proporción (%)") +
+  ggtitle("Proporción de niños sobre niñas por año")
+```
+
+Como podemos observar hay una tendencia a la baja, salvo en el intervalo de 1960 a 1970 donde hubo un incremento
+
+Ahora encontremos en que año se presento el maximo numero de nacimientos registrado
+
+```{r}
+df_max_yr <- present[present$total == max(present$total),]
+df_max_yr
+```
+
+Gráficamente
+
+```{r}
+
+ggplot(present, aes(x=year,y=total)) + 
+  geom_line(size = 1,color="darkblue") + 
+  geom_point(color="darkcyan") +
+  geom_vline(xintercept = df_max_yr$year) +
+  geom_hline(yintercept = df_max_yr$total) +
+  xlab("Año") +
+  ylab("Total de nacidos") +
+  ggtitle("Niños nacidos en total de 1940 a 2013")
+```
