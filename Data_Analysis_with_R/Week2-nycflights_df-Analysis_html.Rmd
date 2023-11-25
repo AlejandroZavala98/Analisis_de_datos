@@ -194,7 +194,7 @@ ggplot(data = nycflights_on_d, aes(x = origin, fill = dep_type)) +
   geom_bar() + theme_grey(base_size = 19)
 ```
 
-Ahora, si no le queremos los retrasos en la salida y deseamos programar un viaje en un mes que minimice el posible retraso en la salida al salir de Nueva York. Una alternativa podria ser elegir el mes con el menor retraso medio en la salida. Otra opción es elegir el mes con el retraso de mediana de salida más bajo. ¿Cuáles son los pros y los contras de estas dos opciones?
+Ahora, si no queremos los retrasos en la salida y deseamos programar un viaje en un mes que minimice el posible retraso en la salida al salir de Nueva York. Una alternativa podria ser elegir el mes con el menor retraso medio en la salida. Otra opción es elegir el mes con el retraso de mediana de salida más bajo. ¿Cuáles son los pros y los contras de estas dos opciones?
 
 Media: representa el promedio general, teniendo en cuenta el efecto de cada retraso y dando una idea de cómo se distribuyen los datos. Desventaja: esto puede verse sesgado por valores atípicos.
 

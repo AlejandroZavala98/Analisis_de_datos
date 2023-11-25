@@ -1,0 +1,177 @@
+---
+title: "Week3-kobe_basket-Intro"
+author: "Alejandro Zavala"
+date: "2023-09-10"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+# Clear environment
+rm(list = ls())
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Los jugadores de baloncesto que encestan varias canastas seguidas se describen como tener una *mano caliente*. Los aficionados y los jugadores han creído durante mucho tiempo en la mano caliente, fenómeno que refuta la suposición de que cada disparo es independiente del próximo. 
+
+Sin embargo, [un artículo de 1985] (http://www.sciencedirect.com/science/article/pii/0010028585900106) de Gilovich, Vallone y Tversky recopiló evidencia que contradijo esta creencia y demostró que los disparos sucesivos son independientes
+eventos. Este artículo inició una gran controversia que continúa hasta el día de hoy, como se puede
+ver buscando en Google *baloncesto de mano caliente*.
+
+En este analisis se aplicara un enfoque para responder preguntas como esta. Los objetivos son:
+1. Pensar en los efectos de eventos independientes y dependientes
+2. Simular rachas de disparos en R
+3. Comparar una simulación con la real datos para determinar si el fenómeno de la mano caliente parece ser real.
+
+```{r load-packages, message=FALSE}
+library(statsr)
+library(dplyr)
+library(ggplot2)
+```
+
+Nuestra investigación se centrará en el desempeño de un jugador: Kobe Bryant de los Lakers de Los Ángeles. Su actuación ante los Orlando Magic en el 2009.
+Las finales de la NBA le valieron el título de *Jugador Más Valioso* y muchos espectadores coentaron cómo parecía mostrar una mano caliente.
+
+```{r}
+head(kobe_basket)
+```
+
+Viendo las variables que contien el dataframe
+
+```{r}
+names(kobe_basket)
+```
+
+Para ver la estructura de un dataframe en R
+
+```{r}
+str(kobe_basket)
+```
+
+Adicional si queremos conocer mas acerca del dataframe
+
+```{r}
+?kobe_basket
+```
+
+Ahora, por ejemplo, en el Juego 1 Kobe tuvo la siguiente secuencia de aciertos y errores de
+sus nueve intentos de tiro en el primer cuarto:
+
+```{r}
+game1_q1 <- kobe_basket %>% filter(game == 1 & quarter == 1) %>% arrange(time)
+game1_q1
+```
+
+Observando la salida, podemos suponer que cuando el tiro (shot) es M signidica que perdio el tiro (miss) y si es H que lo encesto (hit).
+
+
+```{r}
+kobe_streak <- calc_streak(kobe_basket$shot)
+kobe_streak
+```
+
+Luego podemos observar la distribución de estas longitudes de racha.
+
+```{r}
+ggplot(data = kobe_streak, aes(x = length)) +
+  geom_histogram(color="black", fill="darkgreen",binwidth = 1) +
+  ggtitle(label="Longitudes de racha") +
+  xlab("Longitud") +
+  ylab("Cantidad de rachas")
+```
+
+## ¿Comparado con que?
+
+Hemos demostrado que Kobe tuvo algunas rachas largas de tiros, pero ¿son lo suficientemente largas como para respaldar la creencia de que tenía las manos calientes? ¿Con qué podemos compararlos?
+
+Para responder a estas preguntas, volvamos a la idea de *independencia*. Dos procesos son independientes si el resultado de uno no afecta el resultado del segundo. Si cada tiro que realiza un jugador es un proceso independiente, haber acertado o fallado el primer tiro no afectará la probabilidad de acertar o fallar el segundo.
+
+Un tirador con una mano caliente tendrá tiros que *no* son independientes entre sí. Específicamente, si el tirador hace su primer tiro, el modelo de mano caliente dice que tendrá una probabilidad *mayor* de hacer su segundo tiro.
+
+Supongamos por un momento que el modelo de mano caliente es válido para Kobe. Durante su carrera, el porcentaje de veces que Kobe hace una canasta (es decir, su porcentaje de tiro) es aproximadamente del 45%, o en notación de probabilidad.
+
+$P(\textrm{shot 1 = H}) = 0.45$
+
+Verificando y redondeando a opinión personal
+
+```{r}
+kobe_basket %>% 
+  group_by(shot) %>%
+  summarise(shot_p = n()/nrow(kobe_basket))
+```
+
+Si hace el primer tiro y tiene una mano caliente (*no* tiros independientes), entonces la probabilidad de que acierte su segundo tiro ascendería a, digamos, 60%
+
+$ P(\textrm{shot 2 = H} \, | \, \textrm{shot 1 = H}) = 0.60 $
+
+Como resultado de estas mayores probabilidades, se esperaría que Kobe tuviera rachas más largas. Compare esto con la perspectiva escéptica en la que Kobe *no* tiene la mano caliente, donde cada tiro es independiente del siguiente. Si acierta su primer tiro, la probabilidad de que acierte el segundo sigue siendo 0.45.
+
+$ P(\textrm{shot 2 = H} \, | \, \textrm{shot 1 = H}) = 0.45 $
+
+En otras palabras, hacer el primer tiro no afectó la probabilidad de que hiciera el segundo tiro. Si los tiros de Kobe son independientes, entonces tendría la misma probabilidad de acertar cada tiro independientemente de sus tiros anteriores: 45%.
+
+Ahora que hemos planteado la situación en términos de tiros independientes, volvamos a la pregunta: ¿cómo sabemos si las rachas de tiros de Kobe son lo suficientemente largas como para indicar que tiene las manos calientes? Podemos comparar la duración de su racha con la de alguien sin manos calientes: un tirador independiente.
+
+Simulemos ahora el resultado, en R el comando sample require de 3 parametros, el primero son las opciones a simular, la cantidad de elementos a esperados y si se permite con reemplazamiento. Simulando una moneda con 100 lanzamientos con reemplazamiento 
+
+```{r}
+coin_outcomes <- c("heads", "tails")
+sim_fair_coin <- sample(coin_outcomes, size = 100, replace = TRUE)
+table(sim_fair_coin)
+sim_fair_coin
+```
+
+Dado que sólo hay dos elementos en los "resultados", la probabilidad de que "lancemos" una moneda y salga cara es 0,5. Digamos que estamos tratando de simular una moneda injusta que sabemos que solo sale cara el 20% de las veces. Podemos ajustar esto agregando un argumento llamado "prob", que proporciona un vector de dos ponderaciones de probabilidad.
+
+```{r}
+sim_unfair_coin <- sample(coin_outcomes, size = 100, replace = TRUE, prob = c(0.2, 0.8))
+sim_unfair_coin
+table(sim_unfair_coin)
+sim_fair_coin
+
+```
+
+Simular a un jugador de baloncesto que realiza tiros independientes utiliza el mismo mecanismo que utilizamos para simular un lanzamiento de moneda. Para simular un solo disparo desde un
+tirador independiente con un porcentaje de tiro del 50% escribimos,
+
+```{r}
+shot_outcomes <- c("H", "M")
+sim_basket <- sample(shot_outcomes, size = 133, replace = TRUE)
+table(sim_basket)
+sim_basket
+```
+
+Para hacer una comparación válida entre Kobe y nuestro tirador independiente simulado, necesitamos alinear tanto su porcentaje de tiros como el número de tiros intentados.
+
+```{r}
+shot_outcomes <- c("H", "M")
+sim_basket <- sample(shot_outcomes, size = 133, replace = TRUE, prob = c(0.45, 0.55))
+table(sim_basket)
+sim_basket
+```
+
+
+Tenga en cuenta que hemos llamado al nuevo vector "sim_basket", el mismo nombre que le dimos al vector anterior que refleja un porcentaje de disparo del 50%. En esta situación, R sobrescribe el objeto antiguo con el nuevo, así que asegúrese siempre de no necesitar la información en un vector antiguo antes de reasignar su nombre.
+
+Con los resultados de la simulación guardados como `sim_basket`, tenemos los datos necesarios para comparar a Kobe con nuestro tirador independiente.
+
+Ambos conjuntos de datos representan los resultados de 133 intentos de tiro, cada uno con el mismo porcentaje de tiro del 45%. Sabemos que nuestros datos simulados son de un tirador que tiene disparos independientes. Es decir, sabemos que el tirador simulado no tiene
+
+
+```{r}
+sim_streak <- calc_streak(sim_basket)
+sim_streak
+```
+
+Haga un gráfico de la distribución de longitudes de racha simuladas del tirador independiente. ¿Cuál es la duración típica de la racha de este tirador independiente simulado con un porcentaje de tiro del 45%? ¿Cuánto dura la racha más larga de canastas del jugador en 133 tiros?
+
+
+```{r}
+ggplot(data = sim_streak, aes(x = length)) +
+  geom_histogram(color="black", fill="darkred",binwidth = 1) +
+  ggtitle(label="Longitudes de racha simuladas") +
+  xlab("Longitud") +
+  ylab("Cantidad de rachas")
+```
