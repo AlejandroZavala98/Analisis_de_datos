@@ -9,11 +9,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r, echo = FALSE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+```{r, echo = FALSE, fig.height= 4.0, fig.width = 5.5, fig.align="center", warning=FALSE}
 library(knitr)
 library(ggplot2)
-
-
 ```
 
 \newpage
@@ -37,9 +35,7 @@ auto <- sample(c("Si","No"), size = cantidad_datos, replace = TRUE)
 casa <- sample(c("Si","No"), size = cantidad_datos, replace = TRUE)
 licenciatura <- sample(c("Si","No", "Se desconoce"), size = cantidad_datos, replace = TRUE)
 
-
 datos_ingresos <- data.frame(edad,sexo,ingresos,licenciatura,tono_piel,auto,casa)
-
 kable(head(datos_ingresos,20),format="markdown",row.names=TRUE)
 ```
 
@@ -144,7 +140,7 @@ Veamos la distribución de los ingresos por sexo con un histograma y en un diagr
 ```{r, echo = TRUE, fig.height= 3.2, fig.width = 5.5, fig.align="center"}
 hist_ingresos_sex <- ggplot( datos_ingresos,aes(x=ingresos, fill=sexo)) +
   geom_histogram(bins=30)
-boxplot_ingresos_sexo <- ggplot( datos_ingresos,aes(y=ingresos, fill = sexo)) +
+boxplot_ingresos_sexo <- ggplot( datos_ingresos,aes(y=ingresos, x = sexo)) +
   geom_boxplot()
 hist_ingresos_sex
 boxplot_ingresos_sexo

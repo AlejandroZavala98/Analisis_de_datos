@@ -1,133 +1,157 @@
 ---
-title: "Week2-nycflights_df-Analysis"
+title: "Análisis al dataframe nycflights"
 author: "Alejandro Zavala"
+date: "2023-08-22"
 output:
-  html_document:
-    theme: cerulean
+  pdf_document:
     toc: true
-    df_print: paged
 editor_options: 
   chunk_output_type: console
 ---
 
-# Análisis a los datos de vuelos que salieron de Nueva York en el año 2013
-
-```{r setup, include=FALSE}
+```{r load-packages, message=FALSE, include=TRUE, warning=FALSE}
 # Clear environment
 rm(list = ls())
+# Librerias a ocupar
+library("knitr")
+library("statsr")
+library("dplyr")
+library("ggplot2")
+library("gridExtra")
 ```
 
-```{r load-packages, message=FALSE, include=FALSE}
-library(statsr)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-```
+\newpage
+
+# Análisis a los datos de vuelos que salieron de Nueva York en el año 2013
 
 Se hara un analisis al dataframe "nycflights". Contiene los datos de en tiempo para una muestra aleatoria de vuelos que salieron de Nueva York. Podemos encontrar información acerca de sus variables usando el comando **?nycflights**
 
-## Describiendo las variables del dataframe
+# Describiendo las variables del dataframe
 
-Veamos los primeros registros de este dataframe
-
-```{r}
-head(nycflights)
+Veamos los campos del dataframe
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+names(nycflights)
 ```
+
+Veamos los primeros registros de este dataframe (lo partiremos en dos para que se puedan visualizar)
+
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+kable(head(nycflights[,0:8]))
+kable(head(nycflights[,9:16]))
+```
+
+\newpage
 
 Podemos examinar la distribución de los retrasos en las salidas de todos los vuelos con un histograma.
 
-```{r, warning=FALSE, fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 ggplot(data = nycflights, aes(x = dep_delay)) + 
   geom_histogram(color="black", fill="darkcyan") + 
   ggtitle(label="Retrasos de salidas") +
   xlab("Tiempo de retraso") +
   ylab("Cantidad de retrasos") +
-  theme_grey(base_size = 19)
+  theme_grey(base_size = 14)
 ```
+
+\newpage
+
+# Distribución de datos
 
 Los histogramas son una buena manera de ver la distribución de los datos, en R se puede cambiar dependiendo de cómo se dividen los datos entre los diferentes contenedores (bins). Puede definir fácilmente el ancho del contenedor que desea utilizar (por ejemplo 15 y 150):
 
-```{r, fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 5.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 h_1 <- ggplot(data = nycflights, aes(x = dep_delay)) +
   geom_histogram(binwidth = 15) +
   ggtitle(label="Retrasos de salidas (bin = 15)") +
   xlab("Tiempo de retraso") +
   ylab("Cantidad de retrasos") +
-  theme_grey(base_size = 17)
+  theme_grey(base_size = 12)
 
 h_2 <- ggplot(data = nycflights, aes(x = dep_delay)) +
   geom_histogram(binwidth = 150) +
   ggtitle(label="Retrasos de salidas (bin = 150)") +
   xlab("Tiempo de retraso") +
   ylab("Cantidad de retrasos") +
-  theme_grey(base_size = 17)
+  theme_grey(base_size = 12)
 
 grid.arrange(h_1, h_2,ncol = 1) # Multiple plots in one
 ```
 
-## Filtrando información
+\newpage
 
-Si queremos centrarnos únicamente en los retrasos en las salidas de los vuelos con destino a RDU, debemos primero filtrar los datos de los vuelos dirigidos a RDU (dest == "RDU") y despues haremos un histograma de retrasos en las salidas únicamente de esos vuelos.
+# Filtrando información
+
+Si queremos centrarnos únicamente en los retrasos en las salidas de los vuelos con destino a RDU (Aeropuerto Internacional de Raleigh-Durham), debemos primero filtrar los datos de los vuelos dirigidos a RDU (dest == "RDU") y despues haremos un histograma de retrasos en las salidas únicamente de esos vuelos.
 Usaremos la libreria "dplyr" para hacer filtrados de la información
 
-```{r,fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 rdu_flights <- nycflights %>% filter(dest == "RDU")
 ggplot(data = rdu_flights, aes(x = dep_delay)) +
   geom_histogram(color="black", fill="darkred") +
   ggtitle(label="Retrasos de salidas con destino a RDU") +
   xlab("Tiempo de retraso") +
   ylab("Cantidad de retrasos") +
-  theme_grey(base_size = 19)
+  theme_grey(base_size = 14)
 ```
 
-## Obteniendo medidas por agrupaciones
+\newpage
+
+# Obteniendo medidas por agrupaciones
 
 Obteniendo ahora una tabla de resumen con la media, desviación estandar y numero de datos de este dataframe
 
 De manera manual
 
-```{r}
-data.frame(mean = c(mean(rdu_flights$dep_delay)),
-           sd = c(sd(rdu_flights$dep_delay)),
-           length = c(length(rdu_flights$dep_delay)))
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+kable(data.frame(mean = c(mean(rdu_flights$dep_delay)),
+                 sd = c(sd(rdu_flights$dep_delay)),
+                 length = c(length(rdu_flights$dep_delay))))
 ```
 
 O tambien pudiendo ocupar la libreria **dplyr**
 
-```{r }
-rdu_flights %>%
-  summarise(mean_dd = mean(dep_delay), sd_dd = sd(dep_delay), n = n())
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+agg_flights <- rdu_flights %>% summarise(mean_dd = mean(dep_delay), sd_dd = sd(dep_delay), n = n())
+kable(agg_flights)
 ```
 
 Ahora tambien podemos obtener medidas por agrupaciones, para los vuelos a RDU viendo grupos por origen y obteniendo su media, desviación estandar y el numero de datos
 
-```{r}
-rdu_flights %>%
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+agg_flights_or <- rdu_flights %>%
   group_by(origin) %>%
   summarise(mean_dd = mean(dep_delay), sd_dd = sd(dep_delay), n = n())
+
+kable(agg_flights_or)
 ```
+
+\newpage
 
 Ahora si queremos obtener los retrasos de vuelos con destino a SFO (San Francisco) en el mes de febrero. Recordando que el tiempo negativo representa salidas o llegadas anticipadas.
 
-```{r, fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 sfo_feb_flights <- nycflights %>%
   filter(dest == "SFO", month == 2)
 
-sfo_feb_flights %>%
+sfo_feb_flights_agg <- sfo_feb_flights %>% 
   summarise(mean_dd = mean(dep_delay), sd_dd = sd(dep_delay), n = n())
+
+kable(sfo_feb_flights_agg)
 
 ggplot(data = sfo_feb_flights, aes(x = dep_delay)) +
   geom_histogram(color="black", fill="darkorange") +
   ggtitle(label="Retrasos de salidas con destino a SFO en Febrero") +
   xlab("Tiempo de retraso") +
   ylab("Cantidad de retrasos") +
-  theme_grey(base_size = 19)
+  theme_grey(base_size = 13)
 ```
+
+\newpage
 
 Calculemos ahora la mediana y el rango intercuartil para los vuelos de llegada en el dataframe, agrupado por transportista.
 
-```{r}
-sfo_feb_flights %>%
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+tbl_sfo_feb_flights <- sfo_feb_flights %>%
   group_by(carrier) %>%
   summarise(median_ad = median(arr_delay),
             iqr_ad = IQR(arr_delay),
@@ -135,31 +159,40 @@ sfo_feb_flights %>%
             percent75 = quantile(arr_delay, probs = 0.75),
             n_flights = n()
             )
+kable(tbl_sfo_feb_flights)
 ```
 
-## Análisis de interes
+\newpage
+
+# Análisis de interes
 
 ¿En qué mes esperaría usted tener el mayor retraso promedio en la salida desde un aeropuerto de Nueva York?
 
-```{r}
-nycflights %>%
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+agg_month_meandd <- nycflights %>%
   group_by(month) %>%
   summarise(mean_dd = mean(dep_delay)) %>%
   arrange(desc(mean_dd))
+
+kable(agg_month_meandd)
 ```
 
 ¿Qué mes tiene el mayor retraso medio en las salidas desde un aeropuerto de Nueva York?
 
-```{r}
-nycflights %>%
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+agg_month_mediandd <- nycflights %>%
   group_by(month) %>%
   summarise(median_dd = median(dep_delay)) %>%
   arrange(desc(median_dd))
+
+kable(agg_month_mediandd)
 ```
+
+\newpage
 
 Veamos los diagramas de caja por mes
 
-```{r fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 ggplot(nycflights, aes(x = factor(month), y = dep_delay)) +
   geom_boxplot() +
   theme_grey(base_size = 17)
@@ -167,29 +200,36 @@ ggplot(nycflights, aes(x = factor(month), y = dep_delay)) +
 
 Crearemos un nuevo dataframe el cual tendra una columna nueva donde el tiempo de retraso si es menor a 5 minutos sera en tiempo (on time) y si es mayor lo marcaremos como retraso (delayed)
 
-```{r dep-type}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 nycflights_on_d <- nycflights %>%
   mutate(dep_type = ifelse(dep_delay < 5, "on time", "delayed"))
 ```
 
+\newpage
+
 Veamos la nueva variable que agrego
 
-```{r}
-head(nycflights_on_d)
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+kable(head(nycflights_on_d[,0:8]))
+kable(head(nycflights_on_d[,9:17]))
 ```
 
 Haremos un agrupado por origen y tomando la proporción si es un viaje en tiempo o anticipado comparandolo con algun retardo
 
-```{r}
-nycflights_on_d %>%
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
+agg_or_dept <- nycflights_on_d %>%
   group_by(origin) %>%
   summarise(ot_dep_rate = sum(dep_type == "on time") / n() , dl_dep_rate = sum(dep_type != "on time") / n()) %>%
   arrange(desc(ot_dep_rate))
+
+kable(agg_or_dept)
 ```
+
+\newpage
 
 También podemos visualizar la distribución de la tasa de salidas puntuales en los tres aeropuertos utilizando un gráfico de barras segmentadas.
 
-```{r, fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 ggplot(data = nycflights_on_d, aes(x = origin, fill = dep_type)) +
   geom_bar() + theme_grey(base_size = 19)
 ```
@@ -200,19 +240,24 @@ Media: representa el promedio general, teniendo en cuenta el efecto de cada retr
 
 Mediana: toma el valor medio de todo el conjunto de datos, por lo que los valores atípicos no sesgan la mediana. Desventaja: no representa cómo se distribuyen los datos.
 
+\newpage
+
 Ahora, crearemos una variable llamada velocidad promedio, se puede calcular como la distancia dividida por el número de horas de viaje, y tenga en cuenta que el tiempo_aire se expresa en minutos. Una vez aplicando ese filtro y ademas ordenando descendentemente veremos los vuelos con la velocidad mas alta.
 
-```{r}
+```{r, include=TRUE, fig.height= 4.5, fig.width = 7.5, fig.align="center", warning=FALSE}
 nycflights_sp <- nycflights %>%
   mutate(avg_speed = 60*(distance / air_time)) %>%
   arrange(desc(avg_speed))
 
-head(nycflights_sp)
+kable(head(nycflights_sp[,0:8]))
+kable(head(nycflights_sp[,9:17]))
 ```
+
+\newpage
 
 Ahora, haciendo un gráfico de dispersión entre la distancia y velocidad, se obtiene:
 
-```{r, fig.width=14, fig.height=12}
+```{r, include=TRUE, fig.height= 5.5, fig.width = 8.5, fig.align="center", warning=FALSE}
 ggplot(data = nycflights_sp, aes(x = distance, y = avg_speed)) + 
   geom_point() +
   ggtitle(label="Velocidad promedio de vuelos de NY") +
