@@ -1,0 +1,152 @@
+---
+title: "Exploración de dataframes con R"
+output: 
+  pdf_document: 
+    toc: yes
+author: "Alejandro Zavala"
+toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo = FALSE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+library(knitr)
+library(ggplot2)
+
+
+```
+
+\newpage
+
+# Descripción del análisis
+
+El siguiente análisis consiste en interactuar con el entorno y lógica de diversas funciones en R. Se simulara un dataframe con diversas variables para el análisis exploratorio.
+
+Viendo las primeras 20 observaciones del dataframe
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+set.seed(8) # Semilla para replicar script
+
+cantidad_datos <- 10000
+
+edad <- sample(10:45, size = cantidad_datos, replace = TRUE)
+sexo <- sample(c("Masculino","Femenino"), size = cantidad_datos, replace = TRUE)
+ingresos <- ifelse(sexo == "Femenino", runif(cantidad_datos,6000,12000), rnorm(cantidad_datos,22000,3500))
+tono_piel <- sample(c("Blanco","Negro","Moreno"), size = cantidad_datos, replace = TRUE)
+auto <- sample(c("Si","No"), size = cantidad_datos, replace = TRUE)
+casa <- sample(c("Si","No"), size = cantidad_datos, replace = TRUE)
+licenciatura <- sample(c("Si","No", "Se desconoce"), size = cantidad_datos, replace = TRUE)
+
+
+datos_ingresos <- data.frame(edad,sexo,ingresos,licenciatura,tono_piel,auto,casa)
+
+kable(head(datos_ingresos,20),format="markdown",row.names=TRUE)
+```
+
+\newpage
+
+Viendo las ultimas 20 observaciones del dataframe
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+kable(tail(datos_ingresos,20),format="markdown",row.names=TRUE)
+```
+
+Viendo el nombre de columna del dataframe
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+names(datos_ingresos)
+```
+
+Donde:
+
+1. edad: representa la edad del individuo
+2. Sexo: representa el sexo del individuo
+3. ingresos: Ingresos mensuales del individuo mensual (en moneda mexicana)
+4. licenciatura: si el individuo cuenta con licenciatura
+5. tono_piel: raza del individuo
+6. auto: si el individuo tiene auto propio
+7. casa: si el individuo tiene casa propio
+
+\newpage
+
+# Explorando el dataframe
+
+Para conocer la estructura del dataframe, usamos la función **str**
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+str(datos_ingresos) 
+```
+
+# Selección de variables
+
+Si deseamos mostrar las primeras 10 filas de nuestro dataframe
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+kable(datos_ingresos[1:10,])
+```
+
+\newpage
+
+Si deseamos ver las primeras 10 observaciones (renglones) de las primeras 2 columnas
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+kable(datos_ingresos[1:10,1:2],format="markdown",row.names=TRUE)
+```
+
+Si deseamos ver los elementos únicos de una columna, tomando la de sexo
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+unique_sex <- unique(datos_ingresos["sexo"]);kable(unique_sex)
+```
+
+Si deseamos filtrar nuestro dataframe por individuos que sean del sexo "Femenino". Mostraremos las primeras 15 observaciones
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+data_femenino <- datos_ingresos[datos_ingresos["sexo"]=="Femenino",]
+kable(data_femenino[1:15,],format="markdown",row.names=TRUE)
+```
+
+\newpage
+
+Si queremos extraer a todos los individuos de sexo "Masculino" y que sean de tono de piel "moreno". Mostrando las primeras 10 observaciones
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+data_masculino_moreno <- datos_ingresos[datos_ingresos["sexo"]== "Masculino" & datos_ingresos["tono_piel"]=="Moreno",]
+kable(data_masculino_moreno[1:10,],format="markdown",row.names=TRUE)
+```
+
+Si deseamos filtrar por individuos de sexo femenino y con ingresos mayores iguales a 1000 dolares. Mostrando las primeras 10 observaciones
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+data_femenino_1000 <- datos_ingresos[datos_ingresos["sexo"]== "Femenino" & datos_ingresos["ingresos"]>=1000,]
+
+kable(data_femenino_1000[1:10,],format="markdown",row.names=TRUE)
+```
+
+\newpage
+
+# Agregando nuevas variables
+
+Si al dataframe inicial queremos convertir la cantidad a dólares americanos (considerando este a un intercambio de 1 dólar a 20 pesos mexicanos). Listando las primeras 10 observaciones
+
+```{r, echo = TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
+datos_ingresos["ingresos_us"] <- datos_ingresos["ingresos"]/20
+
+kable(datos_ingresos[1:10,],format="markdown",row.names=TRUE)
+```
+
+\newpage
+
+# Distribuciones de los datos
+
+Veamos la distribución de los ingresos por sexo con un histograma y en un diagrama de caja
+
+```{r, echo = TRUE, fig.height= 3.2, fig.width = 5.5, fig.align="center"}
+hist_ingresos_sex <- ggplot( datos_ingresos,aes(x=ingresos, fill=sexo)) +
+  geom_histogram(bins=30)
+boxplot_ingresos_sexo <- ggplot( datos_ingresos,aes(y=ingresos, fill = sexo)) +
+  geom_boxplot()
+hist_ingresos_sex
+boxplot_ingresos_sexo
+```
+
