@@ -1,33 +1,42 @@
 ---
-title: "Week1-arbuthnot_df-Intro"
+title: "Análisis al dataframe arbuthnot"
 author: "Alejandro Zavala"
 date: "2023-08-09"
-output: pdf_document
+output: 
+  pdf_document: 
+    toc: yes
 editor_options: 
   chunk_output_type: console
 ---
 
 
-```{r setup, include=FALSE}
+```{r setup, include=TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center",warning=FALSE,attr.message=FALSE}
 # Clear environment
 rm(list = ls())
 # Call libraries
+library("knitr")
 library("ggplot2")
 library("statsr")
 library("tidyverse")
 ```
 
+\newpage
+
+# Descripción del análisis
+
 Se hara un pequeño analisis a la tabla "arbuthnot" proveniente de la libreria **statsr**.
 Este dataframe contiene la cantidad de niños y niñas nacidos en Londres de 1629 a 1710
 
-```{r}
+```{r, include=TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
 data(arbuthnot) # Load dataframa
-head(arbuthnot) # Show few records
+kable(head(arbuthnot)) # Show few records
 ```
+
+# Explorando el dataframe
 
 Describir dimensiones del dataframe
 
-```{r}
+```{r, include=TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
 dim(arbuthnot) # Dimension of an object in R
 dim(arbuthnot)[1] # Total records of dataframe
 dim(arbuthnot)[2] # Total fields of dataframe
@@ -37,13 +46,17 @@ Donde el primer elemento denota la cantidad de registros totales y el segundo de
 
 Otra función interesante, es names que permite ver las variables del dataframe
 
-```{r}
+```{r, include=TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
 names(arbuthnot)
 ```
 
+\newpage
+
+# Visualización de los datos
+
 Veamos ahora un diagrama de dispersion de la cantidad de niñas nacidas en Londres de 1629 a 1710
 
-```{r}
+```{r, include=TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center"}
 ggplot(data = arbuthnot, aes(x = year, y = girls)) +
   geom_point() +
   xlab("Año") +
@@ -51,9 +64,9 @@ ggplot(data = arbuthnot, aes(x = year, y = girls)) +
   ggtitle("Cantidad de niñas nacidas en Londres de 1629 a 1710")
 ```
 
-Construyamos un grafico donde se muestre la cantidad total de niños y niñas nacidas en Londres de 1629 a 1710
+Construyamos un gráfico donde se muestre la cantidad total de niños y niñas nacidas en Londres de 1629 a 1710
 
-```{r}
+```{r, include=TRUE, fig.height= 4.0, fig.width = 5.5, fig.align="center",warning=FALSE}
 arbuthnot$total <- arbuthnot$boys + arbuthnot$girls
 
 ggplot(data = arbuthnot, aes(x = year, y = total)) +
@@ -64,12 +77,14 @@ ggplot(data = arbuthnot, aes(x = year, y = total)) +
   ggtitle("Cantidad de recién nacidos en Londres de 1629 a 1710")
 ```
 
+# Agregando nuevas variables
+
 Veamos si hay mas niños o niñas por años, creando una variable que sea verdadera cuando haya mas niños que niña en cada año
 
 ```{r}
 arbuthnot$more_boys <- arbuthnot$boys > arbuthnot$girls
-head(arbuthnot,n=17)
+kable(head(arbuthnot))
 
-arbuthnot %>% count(more_boys)
-# Similar in SQL select more_boys from arbuthnot group by more_boys
+agg_boys_girls <- arbuthnot %>% group_by(more_boys) %>% summarise(total_count=n())
+kable(agg_boys_girls) # Similar in SQL select more_boys from arbuthnot group by more_boys
 ```
