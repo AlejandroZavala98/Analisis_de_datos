@@ -1,0 +1,26 @@
+{
+    "dev": {
+        "db_nm": "dev_ventas",
+        "host": "localhost",
+        "pass": "P05TGR3SQL_2023#",
+        "puerto": 5432,
+        "usr": "pytopg_dev_sales",
+        "usr_developer":"hs_mx"
+    },
+    "prod": {
+        "db_nm": "prod_ventas",
+        "host": "localhost",
+        "pass": "P05TGR3SQL_2023#",
+        "puerto": 5432,
+        "usr": "usr_pg_sales_py",
+        "usr_developer":"hs_mx"
+    },
+    "qa": {
+        "db_nm": "qa_ventas",
+        "host": "localhost",
+        "pass": "P05TGR3SQL_2023#",
+        "puerto": 5432,
+        "usr": "usr_pg_sales_py",
+        "usr_developer":"hs_mx"
+    }
+}

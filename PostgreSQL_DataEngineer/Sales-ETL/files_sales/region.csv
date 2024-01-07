@@ -1,0 +1,14 @@
+TerritoryKey,Note,Rate
+1,Northwest|United States|North America,0.15
+2,Northeast|United States|North America,0.25
+3,Central|United States|North America,0.64
+4,Southwest|Mexico|North America,0.11
+5,South MX|Mexico|North America,0.25
+6,North MX|Mexico|North America,0.32
+7,Central MX|Mexico|North America,0.15
+8,South China|China|Asia,0.33
+9,Central China|China|Asia,0.29
+10,Canada|Canada|North America,0.65
+11,France|France|Europe,0.17
+12,Germany|Germany|Europe,0.39
+13,Australia|Australia|Pacific,0.68
